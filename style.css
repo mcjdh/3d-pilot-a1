@@ -1,0 +1,31 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #191c1f;
+  color: #eee;
+  font-family: monospace, sans-serif;
+}
+
+#game-container {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 0;
+}
+
+#ui {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background: rgba(20, 22, 24, 0.7);
+  padding: 10px 20px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+#level-info {
+  margin-top: 10px;
+  font-size: 1.1em;
+}
