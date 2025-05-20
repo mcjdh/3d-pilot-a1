@@ -81,9 +81,33 @@ export class Player {
         
         // If there's input, move the player
         if (dirX !== 0 || dirZ !== 0) {
+            // Normalize diagonal movement
+            if (dirX !== 0 && dirZ !== 0) {
+                const length = Math.sqrt(dirX * dirX + dirZ * dirZ);
+                dirX /= length;
+                dirZ /= length;
+            }
+            
+            // Get camera yaw angle
             const angle = this.object.rotation.y;
+            
+            // Calculate movement vector relative to camera orientation
             const dx = (dirX * Math.cos(angle) - dirZ * Math.sin(angle)) * this.speed * deltaTime;
             const dz = (dirX * Math.sin(angle) + dirZ * Math.cos(angle)) * this.speed * deltaTime;
+            
+            // Clamp maximum movement distance to prevent tunneling at high speeds or low framerates
+            const maxStep = 0.1; // Maximum distance per frame
+            const stepLengthSq = dx * dx + dz * dz;
+            
+            let finalDx = dx;
+            let finalDz = dz;
+            
+            // If step is too large, scale it down
+            if (stepLengthSq > maxStep * maxStep) {
+                const scaleFactor = maxStep / Math.sqrt(stepLengthSq);
+                finalDx = dx * scaleFactor;
+                finalDz = dz * scaleFactor;
+            }
             
             // Store current position in case we need to revert
             const oldPosition = this.object.position.clone();
@@ -92,15 +116,31 @@ export class Player {
             const newPosition = oldPosition.clone();
             
             // Try moving along X axis
-            newPosition.x += dx;
+            newPosition.x += finalDx;
             if (this.checkCollisions(newPosition)) {
                 newPosition.x = oldPosition.x; // Revert X movement
             }
             
             // Try moving along Z axis
-            newPosition.z += dz;
+            newPosition.z += finalDz;
             if (this.checkCollisions(newPosition)) {
                 newPosition.z = oldPosition.z; // Revert Z movement
+            }
+            
+            // If we couldn't move on either axis individually, try small steps
+            // This helps prevent getting stuck on corners
+            if (newPosition.x === oldPosition.x && newPosition.z === oldPosition.z && stepLengthSq > 0) {
+                // Try small steps at different angles to find a valid path
+                for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+                    const testPosition = oldPosition.clone();
+                    testPosition.x += Math.cos(angle) * maxStep * 0.5;
+                    testPosition.z += Math.sin(angle) * maxStep * 0.5;
+                    
+                    if (!this.checkCollisions(testPosition)) {
+                        newPosition.copy(testPosition);
+                        break;
+                    }
+                }
             }
             
             // Apply new position
@@ -113,10 +153,11 @@ export class Player {
         // Create a bounding box representing the player's body
         this.boundingBox = new THREE.Box3();
         
-        // Player is represented as a box 0.6 wide and 1.8 tall
+        // Player is represented as a box with a small margin to prevent getting caught on corners
+        // Width and depth slightly smaller than the actual size (0.6 -> 0.5) to avoid corner issues
         this.boundingBox.setFromCenterAndSize(
             this.object.position.clone(),
-            new THREE.Vector3(0.6, 1.8, 0.6)
+            new THREE.Vector3(0.5, 1.8, 0.5)
         );
     }
     
@@ -126,7 +167,7 @@ export class Player {
         const potentialBox = new THREE.Box3();
         potentialBox.setFromCenterAndSize(
             newPosition.clone(),
-            new THREE.Vector3(0.6, 1.8, 0.6)
+            new THREE.Vector3(0.5, 1.8, 0.5)  // Matching the player hitbox dimensions
         );
         
         // Check against all collidables
