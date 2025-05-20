@@ -4,14 +4,15 @@
 import { Level } from './Level.js';
 
 export class LevelManager {
-    constructor(scene, player, hud, particleSystem, textureLoader) {
+    constructor(scene, player, hud, particleSystem, textureLoader, hitboxHelper) {
         this.scene = scene;
         this.player = player;
         this.hud = hud;
         this.particleSystem = particleSystem;
         this.textureLoader = textureLoader;
+        this.hitboxHelper = hitboxHelper;
         this.currentLevel = 0;
-        this.levelInstance = new Level(scene, particleSystem, textureLoader);
+        this.levelInstance = new Level(scene, particleSystem, textureLoader, hitboxHelper);
         this.levels = [];
         this.keysCollected = 0;
     }

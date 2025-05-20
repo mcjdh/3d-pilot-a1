@@ -5,10 +5,11 @@ import { Key } from '../entities/Key.js';
 import { Portal } from '../entities/Portal.js';
 
 export class Level {
-    constructor(scene, particleSystem, textureLoader) {
+    constructor(scene, particleSystem, textureLoader, hitboxHelper) {
         this.scene = scene;
         this.particleSystem = particleSystem;
         this.textureLoader = textureLoader;
+        this.hitboxHelper = hitboxHelper;
         this.objects = [];
         this.keys = [];
         this.portal = null;
@@ -336,6 +337,42 @@ export class Level {
     // Get remaining key count
     getRemainingKeyCount() {
         return this.keys.filter(key => !key.collected).length;
+    }
+
+    // Update hitbox visualizations
+    updateHitboxVisualizations(hitboxHelper) {
+        if (!hitboxHelper) return;
+        
+        // Visualize wall hitboxes
+        this.objects.forEach((obj, index) => {
+            if (obj.userData && obj.userData.hitbox) {
+                hitboxHelper.createOrUpdateHitboxMesh(
+                    obj.userData.hitbox,
+                    `wall_${index}`,
+                    0xee4444
+                );
+            }
+        });
+        
+        // Visualize key hitboxes
+        this.keys.forEach((key, index) => {
+            if (key && key.hitbox && !key.collected) {
+                hitboxHelper.createOrUpdateHitboxMesh(
+                    key.hitbox,
+                    `key_${index}`,
+                    0xffcc00
+                );
+            }
+        });
+        
+        // Visualize portal hitbox
+        if (this.portal && this.portal.hitbox) {
+            hitboxHelper.createOrUpdateHitboxMesh(
+                this.portal.hitbox,
+                'portal',
+                0x6688ff
+            );
+        }
     }
 
     // Get total key count

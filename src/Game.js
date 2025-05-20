@@ -9,6 +9,7 @@ import { HUD } from './ui/HUD.js';
 import { LEVELS } from './levels/LevelData.js';
 import { TextureLoader } from './engine/TextureLoader.js';
 import { ParticleSystem } from './engine/ParticleSystem.js';
+import { HitboxHelper } from './engine/HitboxHelper.js';
 
 export class Game {
     constructor(containerId) {
@@ -25,6 +26,9 @@ export class Game {
         this.particleSystem = new ParticleSystem(this.core.scene);
         this.core.addEntity(this.particleSystem);
         
+        // Initialize hitbox visualization helper
+        this.hitboxHelper = new HitboxHelper(this.core.scene);
+        
         // Initialize HUD
         this.hud = new HUD();
         
@@ -38,7 +42,8 @@ export class Game {
             this.player, 
             this.hud, 
             this.particleSystem, 
-            this.textureLoader
+            this.textureLoader,
+            this.hitboxHelper
         );
         this.levelManager.init(LEVELS);
         
@@ -58,6 +63,10 @@ export class Game {
                 // Generate a procedural level with 'P' key
                 this.levelManager.loadProceduralLevel();
                 this.hud.showMessage("Generated procedural level");
+            } else if (e.code === 'KeyH') {
+                // Toggle hitbox visualization with 'H' key
+                const enabled = this.hitboxHelper.toggle();
+                this.hud.showMessage(enabled ? "Hitbox visualization enabled" : "Hitbox visualization disabled");
             }
         });
     }
@@ -69,6 +78,19 @@ export class Game {
         // Set player's colliders to the current level's collidable objects
         if (this.levelManager.levelInstance) {
             this.player.setColliders(this.levelManager.levelInstance.getCollidables());
+            
+            // Update hitbox visualizations if enabled
+            if (this.hitboxHelper.enabled) {
+                // Visualize player hitbox
+                this.hitboxHelper.createOrUpdateHitboxMesh(
+                    this.player.getBoundingBox(), 
+                    'player',
+                    0x0088ff
+                );
+                
+                // Visualize all collidable hitboxes
+                this.levelManager.levelInstance.updateHitboxVisualizations(this.hitboxHelper);
+            }
         }
     }
     

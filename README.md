@@ -9,6 +9,7 @@ A minimalist first-person 3D game engine prototype, optimized for the web (HTML/
 - **Esc:** Release mouse pointer
 - **P:** Generate a procedural level (new feature)
 - **Page Up/Down:** Switch between levels (new feature)
+- **H:** Toggle hitbox visualization (debug mode)
 
 ## How to Run Locally
 
@@ -54,6 +55,19 @@ The modular architecture makes it easy to extend:
 1. **New Entity Types**: Create new classes in `/src/entities/` and register them with the core.
 2. **New Level Types**: Extend the Level class in `/src/levels/Level.js` or create procedural generators.
 3. **New UI Elements**: Add components to the HUD class in `/src/ui/HUD.js`.
+
+## Debugging Features
+
+The game includes built-in debugging tools to help with development:
+
+- **Hitbox Visualization**: Press 'H' to toggle wireframe visualization of collision hitboxes
+- **Color Coding**: Different entity types have different colored hitboxes:
+  - Player: Blue
+  - Walls: Red
+  - Keys: Yellow
+  - Portal: Blue/Purple
+
+These debug features help identify collision issues and understand the game's spatial relationships.
 
 ---
 

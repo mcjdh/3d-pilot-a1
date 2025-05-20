@@ -65,7 +65,9 @@ export class InputSystem {
     
     // Reset the mouse delta after reading it
     resetMouseDelta() {
+        const previousDelta = { x: this.mouseDelta.x, y: this.mouseDelta.y };
         this.mouseDelta.x = 0;
         this.mouseDelta.y = 0;
+        return previousDelta;
     }
 }
