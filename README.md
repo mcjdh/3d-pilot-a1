@@ -7,6 +7,8 @@ A minimalist first-person 3D game engine prototype, optimized for the web (HTML/
 - **WASD:** Move (forward, left, backward, right)
 - **Mouse:** Look around (click to lock pointer)
 - **Esc:** Release mouse pointer
+- **P:** Generate a procedural level (new feature)
+- **Page Up/Down:** Switch between levels (new feature)
 
 ## How to Run Locally
 
@@ -27,11 +29,31 @@ A minimalist first-person 3D game engine prototype, optimized for the web (HTML/
 
 ## How to Add New Levels
 
-- Edit `levels/levels.js`.
+- Edit `src/levels/LevelData.js`.
 - Add new entries to the `LEVELS` array.
     - Each level is an object with `name`, `width`, `height`, `start`, and `grid` (2D array: 1=wall, 0=floor).
     - Example included in the file.
 - The game automatically loads levels in order.
+
+## Project Structure
+
+The engine is designed to be highly modular, making it easy to extend with new features:
+
+```
+/src
+  /engine      - Core engine components (rendering, input, game loop)
+  /entities    - Game entities like the player
+  /levels      - Level system and procedural generation
+  /ui          - Heads-up display and user interface
+```
+
+## Adding New Features
+
+The modular architecture makes it easy to extend:
+
+1. **New Entity Types**: Create new classes in `/src/entities/` and register them with the core.
+2. **New Level Types**: Extend the Level class in `/src/levels/Level.js` or create procedural generators.
+3. **New UI Elements**: Add components to the HUD class in `/src/ui/HUD.js`.
 
 ---
 
