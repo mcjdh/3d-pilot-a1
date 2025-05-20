@@ -4,6 +4,7 @@
 export class Core {
     constructor(containerId) {
         this.entities = [];
+        this.updateCallbacks = [];
         this.setupRenderer(containerId);
         this.setupScene();
         this.setupEventListeners();
@@ -49,12 +50,21 @@ export class Core {
         }
     }
 
+    registerUpdateCallback(callback) {
+        this.updateCallbacks.push(callback);
+    }
+
     update(deltaTime) {
         // Update all entities
         this.entities.forEach(entity => {
             if (entity.update) {
                 entity.update(deltaTime);
             }
+        });
+        
+        // Call any registered update callbacks
+        this.updateCallbacks.forEach(callback => {
+            callback(deltaTime);
         });
     }
 
