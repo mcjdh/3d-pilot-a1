@@ -21,6 +21,12 @@ export class Player {
         // Setup camera positioning
         this.camera.position.set(0, 0, 0); // Relative to player
         
+        // Create hitbox for collision detection
+        this.updateBoundingBox();
+        
+        // Track collisions
+        this.colliders = [];
+        
         // Setup pointer lock handling
         this.setupPointerLock();
     }
@@ -42,6 +48,7 @@ export class Player {
     update(deltaTime) {
         this.handleRotation();
         this.handleMovement(deltaTime);
+        this.updateBoundingBox();
     }
     
     handleRotation() {
@@ -78,13 +85,76 @@ export class Player {
             const dx = (dirX * Math.cos(angle) - dirZ * Math.sin(angle)) * this.speed * deltaTime;
             const dz = (dirX * Math.sin(angle) + dirZ * Math.cos(angle)) * this.speed * deltaTime;
             
-            this.object.position.x += dx;
-            this.object.position.z += dz;
+            // Store current position in case we need to revert
+            const oldPosition = this.object.position.clone();
+            
+            // Try moving on each axis separately to allow sliding along walls
+            const newPosition = oldPosition.clone();
+            
+            // Try moving along X axis
+            newPosition.x += dx;
+            if (this.checkCollisions(newPosition)) {
+                newPosition.x = oldPosition.x; // Revert X movement
+            }
+            
+            // Try moving along Z axis
+            newPosition.z += dz;
+            if (this.checkCollisions(newPosition)) {
+                newPosition.z = oldPosition.z; // Revert Z movement
+            }
+            
+            // Apply new position
+            this.object.position.copy(newPosition);
         }
+    }
+    
+    // Update the player's bounding box for collision detection
+    updateBoundingBox() {
+        // Create a bounding box representing the player's body
+        this.boundingBox = new THREE.Box3();
+        
+        // Player is represented as a box 0.6 wide and 1.8 tall
+        this.boundingBox.setFromCenterAndSize(
+            this.object.position.clone(),
+            new THREE.Vector3(0.6, 1.8, 0.6)
+        );
+    }
+    
+    // Check for collisions with a potential new position
+    checkCollisions(newPosition) {
+        // Create a bounding box for the potential new position
+        const potentialBox = new THREE.Box3();
+        potentialBox.setFromCenterAndSize(
+            newPosition.clone(),
+            new THREE.Vector3(0.6, 1.8, 0.6)
+        );
+        
+        // Check against all collidables
+        for (let i = 0; i < this.colliders.length; i++) {
+            const collider = this.colliders[i];
+            if (collider.userData && collider.userData.hitbox) {
+                if (potentialBox.intersectsBox(collider.userData.hitbox)) {
+                    return true; // Collision detected
+                }
+            }
+        }
+        
+        return false; // No collision
+    }
+    
+    // Set colliders for collision detection
+    setColliders(colliders) {
+        this.colliders = colliders;
+    }
+    
+    // Get the player's bounding box
+    getBoundingBox() {
+        return this.boundingBox;
     }
     
     // Set player position (used when changing levels)
     setPosition(x, y, z) {
         this.object.position.set(x, y, z);
+        this.updateBoundingBox();
     }
 }
