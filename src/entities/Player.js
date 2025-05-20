@@ -55,9 +55,15 @@ export class Player {
         // Only handle rotation if pointer is locked
         if (!this.input.isPointerLocked) return;
         
+        // Get mouse movement delta
+        const delta = this.input.resetMouseDelta();
+        
+        // Ensure we have actual mouse movement
+        if (delta.x === 0 && delta.y === 0) return;
+        
         // Update rotation based on mouse movement
-        this.yaw -= this.input.mouseDelta.x * this.rotationSpeed;
-        this.pitch -= this.input.mouseDelta.y * this.rotationSpeed;
+        this.yaw -= delta.x * this.rotationSpeed;
+        this.pitch -= delta.y * this.rotationSpeed;
         
         // Clamp pitch to prevent flipping
         this.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.pitch));
@@ -65,9 +71,6 @@ export class Player {
         // Apply rotation
         this.object.rotation.y = this.yaw;
         this.camera.rotation.x = this.pitch;
-        
-        // Reset mouse delta
-        this.input.resetMouseDelta();
     }
     
     handleMovement(deltaTime) {
